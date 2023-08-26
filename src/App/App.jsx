@@ -121,7 +121,7 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  }, [state.query, page]);
+  }, [state.query, state.images.length, page]);
 
   useEffect(() => {
     if (state.query) {
