@@ -110,14 +110,14 @@ const App = () => {
       if (searchbarRef.current) {
         searchbarRef.current.value = '';
         searchbarRef.current.blur();
+        Notiflix.Report.failure(
+          'Oops!',
+          'Something went wrong! Please try to reload the page!',
+          'Reload',
+          () => window.location.reload()
+        );
       }
 
-      Notiflix.Report.failure(
-        'Oops!',
-        'Something went wrong! Please try to reload the page!',
-        'Reload',
-        () => window.location.reload()
-      );
     } finally {
       setLoading(false);
     }

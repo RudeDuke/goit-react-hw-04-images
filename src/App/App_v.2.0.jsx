@@ -1,5 +1,3 @@
-// Realization №2. Basic / optimal variant using numerous useStates
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, ImageGallery, Loader, Modal, Searchbar } from 'components';
 import { fetchImages as fetch } from 'api/fetchImages';
@@ -78,14 +76,14 @@ const App = () => {
       if (searchbarRef.current) {
         searchbarRef.current.value = '';
         searchbarRef.current.blur();
+        Notiflix.Report.failure(
+          'Oops!',
+          'Something went wrong! Please try to reload the page!',
+          'Reload',
+          () => window.location.reload()
+        );
       }
-
-      Notiflix.Report.failure(
-        'Oops!',
-        'Something went wrong! Please try to reload the page!',
-        'Reload',
-        () => window.location.reload()
-      );
+      
     } finally {
       setLoading(false);
     }
