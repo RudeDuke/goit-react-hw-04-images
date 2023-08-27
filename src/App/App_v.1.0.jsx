@@ -1,4 +1,4 @@
-// BASIC APP VARIANT (without useReducer)
+// Realization №1. Using useReducer 
 
 import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import { Button, ImageGallery, Loader, Modal, Searchbar } from 'components';
