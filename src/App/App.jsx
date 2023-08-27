@@ -1,3 +1,5 @@
+// BASIC APP VARIANT (without useReducer)
+
 import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import { Button, ImageGallery, Loader, Modal, Searchbar } from 'components';
 import { fetchImages as fetch } from 'api/fetchImages';
@@ -45,7 +47,7 @@ const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showScroll, setShowScroll] = useState({ top: false, bottom: false });
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [loadedMore, setLoadedMore] = useState(false);
   const searchbarRef = useRef();
 
   useEffect(() => {
@@ -60,14 +62,14 @@ const App = () => {
     const isPageBottom = scrollHeight - scrollTop - clientHeight < 50;
     const isPageTop = scrollTop < 50;
 
-    if (isPageTop) {
+    if (isPageTop && showScroll.bottom && !loadedMore) {
       setShowScroll({ top: false, bottom: true });
-    } else if (isPageBottom || isAutoScrolling) {
+    } else if (isPageBottom && showScroll.top) {
       setShowScroll({ top: true, bottom: false });
-    } else {
+    } else if (!isPageTop && !isPageBottom) {
       setShowScroll({ top: true, bottom: true });
     }
-  }, [isAutoScrolling]);
+  }, [showScroll, loadedMore]);
 
   useEffect(() => {
     window.addEventListener('scroll', showScrollers);
@@ -77,13 +79,11 @@ const App = () => {
   }, [showScrollers]);
 
   const autoScroll = direction => {
-    setIsAutoScrolling(true);
     if (direction === 'top') {
       scroll.scrollToTop({ duration: 1200 });
     } else {
       scroll.scrollToBottom({ duration: 1200 });
     }
-    setTimeout(() => setIsAutoScrolling(false), 1000);
   };
 
   const loadImages = useCallback(async () => {
@@ -108,7 +108,7 @@ const App = () => {
       console.error(error);
 
       if (searchbarRef.current) {
-        searchbarRef.current.value = ''; // Чомусь під час Error не очищуеться input
+        searchbarRef.current.value = '';
         searchbarRef.current.blur();
       }
 
@@ -121,7 +121,7 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  }, [state.query, state.images.length, page]);
+  }, [state.query, page, state.images.length]);
 
   useEffect(() => {
     if (state.query) {
@@ -161,7 +161,11 @@ const App = () => {
 
   const handleLoadMore = () => {
     setPage(prevPage => prevPage + 1);
+    setLoadedMore(true);
     autoScroll('bottom');
+    setTimeout(() => {
+      setLoadedMore(false);
+    }, 1500);
   };
 
   const handleCloseModal = () => {
@@ -193,7 +197,7 @@ const App = () => {
           onClick={() => autoScroll('top')}
         />
       )}
-      {showScroll.bottom && (
+      {showScroll.bottom && !loadedMore && (
         <FiArrowDownCircle
           className={styles.ScrollToBottomArrow}
           onClick={() => autoScroll('bottom')}
