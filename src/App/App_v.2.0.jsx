@@ -14,6 +14,7 @@ const App = () => {
   const [images, setImages] = useState([]);
   const [query, setQuery] = useState('');
   const [totalImages, setTotalImages] = useState(0);
+  const [prevTotalImages, setPrevTotalImages] = useState(0);
   const [page, setPage] = useState(1);
   const [largeImage, setLargeImage] = useState({ url: '', alt: '' });
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +22,41 @@ const App = () => {
   const [showScroll, setShowScroll] = useState({ top: false, bottom: false });
   const [loadedMore, setLoadedMore] = useState(false);
   const searchbarRef = useRef();
+
+useEffect(() => {
+  if (totalImages === prevTotalImages) {
+    return;
+  }
+
+  const fetchImages = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(query, page);
+      setImages(prevImages => [...prevImages, ...response.hits]);
+      setTotalImages(response.totalHits);
+      setPrevTotalImages(totalImages);
+      if (response.hits.length === 0) {
+        toast.warning(
+          'Unfortunately, we could not find anything for your query.'
+        );
+        setQuery('');
+        return;
+      }
+
+      if (images.length === response.totalHits) {
+        toast.success("That's all we found for your query at the moment");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchImages();
+  // eslint-disable-next-line
+}, [totalImages, query, page]);
+
 
   const showScrollers = useCallback(() => {
     const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
@@ -56,7 +92,7 @@ const App = () => {
 
     try {
       const response = await fetch(query, page);
-      setImages(prevImages => [...prevImages, ...response.hits]);
+      setImages(hits => (hits ? [...hits, ...response.hits] : hits));
       setTotalImages(response.totalHits);
 
       if (response.hits.length === 0) {
@@ -83,7 +119,6 @@ const App = () => {
           () => window.location.reload()
         );
       }
-      
     } finally {
       setLoading(false);
     }
@@ -99,15 +134,23 @@ const App = () => {
   const handleSubmit = newQuery => {
     if (newQuery !== query) {
       setQuery(newQuery);
+      setImages([]);
       setPage(1);
       setShowScroll({ top: false, bottom: false });
     } else {
-      if (totalImages === images.length) {
-        toast.info(`No new images for the query "${query}"`);
+      if (totalImages === prevTotalImages) {
+        toast.info(
+          <>
+            No new images for the query "<strong>{query}</strong>"
+          </>
+        );
       } else {
-        const extraImages = totalImages - images.length;
+        const extraImages = totalImages - prevTotalImages;
         toast.success(
-          `We've found ${extraImages} extra images for the "${query}"`
+          <>
+            We've found <strong>{extraImages}</strong> extra images for the "
+            <strong>{query}</strong>"
+          </>
         );
       }
     }
