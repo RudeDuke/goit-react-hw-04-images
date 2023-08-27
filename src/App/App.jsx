@@ -121,7 +121,8 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  }, [state.query, page, state.images.length]);
+    // eslint-disable-next-line
+  }, [state.query, page]);
 
   useEffect(() => {
     if (state.query) {
