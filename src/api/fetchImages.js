@@ -16,5 +16,5 @@ export const fetchImages = async (query, page) => {
       per_page: PER_PAGE,
     },
   });
-  return response;
+  return response.data;
 };
